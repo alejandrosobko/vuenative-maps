@@ -1,17 +1,30 @@
 <template>
-  <view class="container">
-    <text class="text-color-primary">My Vue Native App</text>
+  <view  class="container">
+    <map-view class="container" :initial-region="coordinates" />
   </view>
 </template>
 
+<script>
+import MapView from "react-native-maps";
+export default {
+    data: function() {
+        return {
+            coordinates: {
+                latitude: -34.724609,
+                longitude: -58.260281,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421
+            }
+        };
+    },
+    components: {
+        MapView,
+    }
+};
+</script>
+
 <style>
 .container {
-  background-color: white;
-  align-items: center;
-  justify-content: center;
   flex: 1;
-}
-.text-color-primary {
-  color: blue;
 }
 </style>
