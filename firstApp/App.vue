@@ -1,12 +1,19 @@
 <template>
-  <view  class="container">
-    <MapView class="container" :initial-region="userLocation" v-if="loaded">
+  <view class="container">
+    <MapView class="container"
+            v-if="loaded"
+            :initialRegion="userLocation"
+            :region="getSearchedLocation" >
       <Marker v-for="marker in markers"
               v-bind:key="marker.id"
               :coordinate="marker.coordinates"
               :title="marker.title"
               :description="marker.description" />
     </MapView>
+    <text-input v-model="searchedAddress"
+                class="searchedAddressInput"
+                placeholder="Search here"
+                :onSubmitEditing="searchLocation" />
   </view>
 </template>
 
@@ -15,6 +22,9 @@ import MapView from "react-native-maps";
 import { Marker } from 'react-native-maps';
 import * as Location from "expo-location";
 import * as Permissions from 'expo-permissions';
+
+GOOGLE_MAPS_API_KEY="secret"
+
 
 export default {
   beforeMount: function() {
@@ -30,10 +40,26 @@ export default {
         { id: 4, title: "Ubicación 4", description: "Esta es una descripción", coordinates: {latitude: -34.100609, longitude: -58.560281} },
       ],
       userLocation: {
+        latitude: null,
+        longitude: null,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       },
+      searchedAddress: '',
+      searchedCoords: {},
     };
+  },
+  computed: {
+    getSearchedLocation: function() {
+      const result = {
+        latitudeDelta: this.userLocation.latitudeDelta,
+        longitudeDelta: this.userLocation.longitudeDelta,
+        latitude: this.searchedCoords.lat,
+        longitude: this.searchedCoords.lng,
+      };
+
+      return this.searchedCoords.lat ? result : null;
+    }
   },
   components: {
     MapView,
@@ -52,6 +78,13 @@ export default {
       }).catch((err)=>{
         console.log(err);
      });
+    },
+    searchLocation: function() {
+      fetch(`https://maps.googleapis.com/maps/api/geocode/json?&address=${this.searchedAddress}&key=${GOOGLE_MAPS_API_KEY}`)
+        .then((response) => response.json()).then(data => {
+          this.searchedCoords = data['results'][0]['geometry']['location']
+        })
+        .catch((error) => console.log(error))
     }
   }
 };
@@ -60,5 +93,18 @@ export default {
 <style>
 .container {
   flex: 1;
+}
+.searchedAddressInput {
+  padding-left: 5px;
+  border-radius: 5px;
+  border-color: #cecece;
+  border-style: solid;
+  border-width: 1px;
+  width: 80%;
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  z-index: 9999;
+  background-color: white;
 }
 </style>
